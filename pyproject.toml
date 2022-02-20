@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "civet-mouse"
+version = "0.1.0"
+description = ""
+authors = ["wilypomegranate <wilypomegranate@users.noreply.github.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+asyncudp = "0.6.0"
+structlog = "^21.5.0"
+aiofiles = "^0.8.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[tool.poetry.scripts]
+server = 'civet_mouse.server:main'
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
