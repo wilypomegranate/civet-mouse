@@ -23,11 +23,11 @@ def parse_args():
     parser.add_argument("-p", "--port", default="5001")
     return parser.parse_args()
 
-async def mouse_interact(hid_fh, button_press: int, x: int, y: int):
+async def mouse_interact(hid_fh, button_press: int, x: int, y: int, z: int):
     # Write moves to file.
-    move = (button_press, x, y)
+    move = (button_press, x, y, z)
     log.msg("Writing move.", move=move)
-    await hid_fh.write(struct.pack("<bbb", *move))
+    await hid_fh.write(struct.pack("<bbbb", *move))
 
 async def amain():
     args = parse_args()
@@ -44,7 +44,7 @@ async def amain():
             data, addr = await sock.recvfrom()
             # 0 is initial state so first sn is 1.
             lsn = seqnum_mapping[addr]
-            sn, button_press, x, y = struct.unpack('<Hbbb', data)
+            sn, button_press, x, y, z = struct.unpack('<Hbbbb', data)
 
             if sn - lsn < 1:
                 # This is an OOO so just do nothing.
@@ -53,15 +53,15 @@ async def amain():
             elif sn - lsn > 1:
                 log.warning("Gap detected.", sn=sn, lsn=lsn, size=sn-lsn)
                 # Process gap, just log
-                await mouse_interact(hid_fh, button_press, x, y)
+                await mouse_interact(hid_fh, button_press, x, y, z)
             elif sn == 65535:
                 # Sequence reset, set lsn to 0.
                 log.msg("Sequence reset.", sn=sn, lsn=lsn, size=sn-lsn)
                 sn = 0
-                await mouse_interact(hid_fh, button_press, x, y)
+                await mouse_interact(hid_fh, button_press, x, y, z)
             else:
                 # This means the data was in order, process it.
-                await mouse_interact(hid_fh, button_press, x, y)
+                await mouse_interact(hid_fh, button_press, x, y, z)
             seqnum_mapping[addr] = sn
 
         sock.close()
